@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import BlocklyContainer from './BlocklyContainer.js';
 import {blocks, tools} from './TeacherMomentsBlocks.js';
 import './App.css';
+import 'whatwg-fetch';
 
 
 class App extends Component {
@@ -14,6 +15,17 @@ class App extends Component {
       defaultXmlText: null,
       xmlText: null
     };
+  }
+
+  componentDidMount() {
+    // Drop error silently
+    fetch('/samples/5.xml')
+      .then(response => response.text())
+      .then(this.onSampleReceived.bind(this))
+  }
+
+  onSampleReceived(defaultXmlText) {
+    this.setState({defaultXmlText});
   }
 
   onLoadClicked() {
