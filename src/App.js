@@ -1,28 +1,31 @@
 import React, { Component } from 'react';
 import BlocklyContainer from './BlocklyContainer.js';
-import TeacherMomentsBlocks from './TeacherMomentsBlocks.js';
+import {blocks, tools} from './TeacherMomentsBlocks.js';
 import './App.css';
 
 
 class App extends Component {
+  // TODO(kr) clarify data for XML in BlocksContainer,
+  // change to imperative method to make explicit it's
+  // uncontrolled but XML can be set from the output.
   constructor() {
     super();
     this.state = {
-      blocks: '...',
+      defaultXmlText: null,
       xmlText: null
     };
   }
 
   onLoadClicked() {
-    const xmlText = window.prompt('Paste XML');
-    this.setState({xmlText});
+    const defaultXmlText = window.prompt('Paste XML');
+    this.setState({defaultXmlText});
   }
-  onChange(blocks) {
-    this.setState({blocks});
+  onBlockXmlChanged(xmlText) {
+    this.setState({xmlText});
   }
 
   render() {
-    const {blocks, xmlText} = this.state;
+    const {defaultXmlText, xmlText} = this.state;
 
     return (
       <div className="App">
@@ -31,13 +34,14 @@ class App extends Component {
         </div>
         <div className="App-blocks">
           <BlocklyContainer
-            xmlText={xmlText}
-            blocks={TeacherMomentsBlocks}
-            onChange={this.onChange.bind(this)} />
+            xmlText={defaultXmlText}
+            blocks={blocks}
+            tools={tools}
+            onBlockXmlChanged={this.onBlockXmlChanged.bind(this)} />
         </div>
         <pre className="App-xml">
           <button className="App-load-xml" onClick={this.onLoadClicked.bind(this)}>Load</button>
-          {blocks}
+          {xmlText}
         </pre>
       </div>
     );

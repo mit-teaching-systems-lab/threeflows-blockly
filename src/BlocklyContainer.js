@@ -6,6 +6,9 @@ import Blockly from 'node-blockly/browser';
 class BlocklyContainer extends Component {
   propTypes: {
     blocks: React.PropTypes.array.isRequired,
+    tools: React.PropTypes.array.isRequired,
+    onBlockXmlChanged: React.PropTypes.func,
+    config: React.PropTypes.object,
     style: React.PropTypes.object
   }
 
@@ -18,7 +21,13 @@ class BlocklyContainer extends Component {
   }
 
   componentDidMount() {
-    // Register blocks
+    this.registerBlocks();
+    this.injectBlockly();
+    this.listenForResizing();
+    this.workspace.addChangeListener(this.onBlocklyEvent.bind(this));
+  }
+
+  registerBlocks() {
     const {blocks} = this.props;
     blocks.forEach((block) => {
       if (Blockly.Blocks[block.type]) return;
@@ -28,36 +37,29 @@ class BlocklyContainer extends Component {
         }
       };
     }, this);
+  }
 
-    // Inject Blockly UI
-    var blocklyDiv = this.divEl;
-    this.workspace = Blockly.inject(blocklyDiv, {
+  injectBlockly() {
+    const {config} = this.props;
+    this.workspace = Blockly.inject(this.divEl, {
       toolbox: this.toolboxEl,
-      grid: {
-        colour: '#ccc',
-        spacing: 20,
-        length: 3
-      },
-      zoom: {
-        controls: true,
-        wheel: false
-      },
-      trashcan: true
+      ...config
     });
+  }
 
-    // Set up resizing
+  listenForResizing() {
     window.addEventListener('resize', this.onResize.bind(this), false);
     this.onResize();
     Blockly.svgResize(this.workspace);
-
-    // Listen for changes
-    this.workspace.addChangeListener(this.onBlocklyEvent.bind(this));
   }
-
   componentWillUnmount() {
     // TODO(kr)
+    // remove window listener
+    // stop listenening to blockly events
+    // tear down Blockly
   }
 
+  // Allow props for XML to be pushed in.  Change this to a method.
   componentWillReceiveProps(nextProps, nextState) {
     const {xmlText} = this.props;
     if (nextProps.xmlText && nextProps.xmlText !== xmlText) {
@@ -71,9 +73,11 @@ class BlocklyContainer extends Component {
   }
 
   onBlocklyEvent(e) {
+    if (!this.props.onBlockXmlChanged) return;
+
     const xml = Blockly.Xml.workspaceToDom(this.workspace);
     const xmlText = Blockly.Xml.domToText(xml);
-    this.props.onChange(xmlText);
+    this.props.onBlockXmlChanged(xmlText);
   }
 
   onResize() {
@@ -97,7 +101,7 @@ class BlocklyContainer extends Component {
   }
 
   render() {
-    const {style, blocks} = this.props;
+    const {style, tools} = this.props;
 
     return (
       <div
@@ -114,15 +118,25 @@ class BlocklyContainer extends Component {
         <xml
           ref={(el) => { this.toolboxEl = el; }}
           className="BlocklyToolbox"
-          style={{display: 'none'}}>
-          {blocks.map(block => {
-            const {type} = block;
-            return <block key={type} type={type}></block>
-          })}
-        </xml>
+          style={{display: 'none'}}>{tools}</xml>
       </div>
     );
   }
 }
+
+BlocklyContainer.defaultProps = {
+  config: {
+    grid: {
+      colour: '#ccc',
+      spacing: 20,
+      length: 3
+    },
+    zoom: {
+      controls: true,
+      wheel: true
+    },
+    trashcan: true
+  }
+};
 
 export default BlocklyContainer;
