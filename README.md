@@ -6,7 +6,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 #### Demo
 See [http://threeflows-blockly.herokuapp.com/](http://threeflows-blockly.herokuapp.com/).
 
-![docs/demo.png](Demo)
+![Demo](docs/demo.png)
 
 #### Run locally
 ```
