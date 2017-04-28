@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Clipboard from 'clipboard';
 import BlocklyContainer from './BlocklyContainer.js';
 import {blocks, tools} from './TeacherMomentsBlocks.js';
 import './App.css';
@@ -11,50 +12,65 @@ class App extends Component {
   // uncontrolled but XML can be set from the output.
   constructor() {
     super();
+    this.clipboard = null;
+    this.copyEl = null;
+    this.blockly = null;
     this.state = {
-      defaultXmlText: null,
       xmlText: null
     };
   }
 
   componentDidMount() {
+    // Bind clipboard listener to copy text in state
+    this.clipboard = new Clipboard(this.copyEl, {
+      text: this.onCopyToClipboardText.bind(this)
+    });
+
     // Drop error silently
     fetch('/samples/5.xml')
       .then(response => response.text())
-      .then(this.onSampleReceived.bind(this))
+      .then(this.loadXmlText.bind(this))
   }
 
-  onSampleReceived(defaultXmlText) {
-    this.setState({defaultXmlText});
+  componentWillUnmount() {
+    this.clipboard.destroy();
+  }
+
+  loadXmlText(xmlText) {
+    this.blockly.loadBlocksFromXmlText(xmlText, {
+      clearExistingBlocks: true
+    });
+  }
+
+  onCopyToClipboardText(trigger) { 
+    const {xmlText} = this.state;
+    return xmlText;
   }
 
   onLoadClicked() {
-    const defaultXmlText = window.prompt('Paste XML');
-    this.setState({defaultXmlText});
+    const xmlText = window.prompt('Paste XML');
+    this.loadXmlText(xmlText);
   }
+
   onBlockXmlChanged(xmlText) {
     this.setState({xmlText});
   }
 
   render() {
-    const {defaultXmlText, xmlText} = this.state;
-
     return (
       <div className="App">
         <div className="App-header">
-          Drag some blocks to make a new scenario!
+          <div className="App-header-text">Drag some blocks to make a new scenario!</div>
+          <button className="App-header-button" ref={(el) => this.copyEl = el} >Copy XML to clipboard</button>
+          <button className="App-header-button" onClick={this.onLoadClicked.bind(this)}>Load XML</button>
         </div>
         <div className="App-blocks">
           <BlocklyContainer
-            xmlText={defaultXmlText}
+            ref={(blockly) => { this.blockly = blockly; }}
             blocks={blocks}
             tools={tools}
             onBlockXmlChanged={this.onBlockXmlChanged.bind(this)} />
         </div>
-        <pre className="App-xml">
-          <button className="App-load-xml" onClick={this.onLoadClicked.bind(this)}>Load</button>
-          {xmlText}
-        </pre>
       </div>
     );
   }

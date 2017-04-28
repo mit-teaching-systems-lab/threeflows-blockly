@@ -5,21 +5,23 @@
 }
 
 .App-header {
+  width: 100%;
+  display: flex;
   font-size: large;
+}
+
+.App-header-text {
+  padding: 20px;
+  flex: 1;
+}
+
+.App-header-button {
   margin: 20px;
+  margin-left: 0px;
+  padding: 5px;
+  cursor: pointer;
 }
 
 .App-blocks {
   flex: 1;
-}
-
-.App-xml {
-  margin: 20px;
-  max-width: 100%;
-  font-size: small;
-  overflow: hidden;
-}
-
-.App-load-xml {
-  margin-right: 20px;
 }

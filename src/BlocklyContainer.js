@@ -18,6 +18,7 @@ class BlocklyContainer extends Component {
     this.toolboxEl = null;
     this.areaId = 'areaId';
     this.divId = 'divId';
+    this.xmlText = '';
   }
 
   componentDidMount() {
@@ -25,6 +26,23 @@ class BlocklyContainer extends Component {
     this.injectBlockly();
     this.listenForResizing();
     this.workspace.addChangeListener(this.onBlocklyEvent.bind(this));
+  }
+
+  componentWillUnmount() {
+    // TODO(kr)
+    // remove window listener
+    // stop listenening to blockly events
+    // tear down Blockly
+  }
+
+  // Public method to allow XML to be pushed in.
+  loadBlocksFromXmlText(xmlText, options) {
+    if (options && options.clearExistingBlocks) {
+      Blockly.mainWorkspace.clear();
+    }
+    const xml = Blockly.Xml.textToDom(xmlText);
+    Blockly.Xml.domToWorkspace(xml, this.workspace);
+    this.xmlText = xmlText;
   }
 
   registerBlocks() {
@@ -52,33 +70,6 @@ class BlocklyContainer extends Component {
     this.onResize();
     Blockly.svgResize(this.workspace);
   }
-  componentWillUnmount() {
-    // TODO(kr)
-    // remove window listener
-    // stop listenening to blockly events
-    // tear down Blockly
-  }
-
-  // Allow props for XML to be pushed in.  Change this to a method.
-  componentWillReceiveProps(nextProps, nextState) {
-    const {xmlText} = this.props;
-    if (nextProps.xmlText && nextProps.xmlText !== xmlText) {
-      this.loadBlocks(nextProps.xmlText);
-    }
-  }
-
-  loadBlocks(xmlText) {
-    const xml = Blockly.Xml.textToDom(xmlText);
-    Blockly.Xml.domToWorkspace(xml, this.workspace);
-  }
-
-  onBlocklyEvent(e) {
-    if (!this.props.onBlockXmlChanged) return;
-
-    const xml = Blockly.Xml.workspaceToDom(this.workspace);
-    const xmlText = Blockly.Xml.domToText(xml);
-    this.props.onBlockXmlChanged(xmlText);
-  }
 
   onResize() {
     var blocklyArea = this.areaEl;
@@ -98,6 +89,14 @@ class BlocklyContainer extends Component {
     blocklyDiv.style.top = y + 'px';
     blocklyDiv.style.width = blocklyArea.offsetWidth + 'px';
     blocklyDiv.style.height = blocklyArea.offsetHeight + 'px';
+  }
+
+  onBlocklyEvent(e) {
+    const xml = Blockly.Xml.workspaceToDom(this.workspace);
+    this.xmlText = Blockly.Xml.domToText(xml);
+
+    if (!this.props.onBlockXmlChanged) return;
+    this.props.onBlockXmlChanged(this.xmlText);
   }
 
   render() {
