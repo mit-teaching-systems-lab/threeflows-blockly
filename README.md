@@ -9,7 +9,7 @@ See [https://threeflows-blockly.herokuapp.com/](https://threeflows-blockly.herok
 ## Setup
 ```
 $ psql
-user=# CREATE TABLE programs (
+CREATE TABLE programs (
   id serial primary key,
   user_key text,
   xml text,
