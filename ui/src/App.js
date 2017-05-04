@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Clipboard from 'clipboard';
+import _ from 'lodash';
 import BlocklyContainer from './BlocklyContainer.js';
 import {blocks, tools} from './TeacherMomentsBlocks.js';
 import './App.css';
@@ -18,6 +19,14 @@ class App extends Component {
     this.state = {
       xmlText: null
     };
+    this.saveXml = _.throttle(this._unthrottledSaveXml, 5000);
+
+    const localStorageKey = 'threeflows-blockly-user-key'
+    const existingUserKey = localStorage.getItem(localStorageKey);
+    if (!existingUserKey) {
+      localStorage.setItem(localStorageKey, 'threeflows-blockly-user-key_' + (new Date()).getTime());
+    }
+    this.userKey = existingUserKey;
   }
 
   componentDidMount() {
@@ -42,6 +51,17 @@ class App extends Component {
     });
   }
 
+  // Fire and forget
+  _unthrottledSaveXml(xmlText) {
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    fetch('/program', {
+      method: 'POST',
+      body: JSON.stringify({userKey: this.userKey, xmlText}),
+      headers
+    });
+  }
+
   onCopyToClipboardText(trigger) { 
     const {xmlText} = this.state;
     return xmlText;
@@ -53,6 +73,7 @@ class App extends Component {
   }
 
   onBlockXmlChanged(xmlText) {
+    this.saveXml(xmlText);
     this.setState({xmlText});
   }
 
