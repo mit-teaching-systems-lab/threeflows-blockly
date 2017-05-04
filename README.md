@@ -6,6 +6,16 @@ See [https://threeflows-blockly.herokuapp.com/](https://threeflows-blockly.herok
 
 ![Demo](docs/demo.png)
 
+## Setup
+```
+$ psql
+user=# CREATE TABLE programs (
+  id serial primary key,
+  user_key text,
+  xml text,
+  timestamp timestamp
+);
+```
 ## Run locally
 ```
 $ npm install
