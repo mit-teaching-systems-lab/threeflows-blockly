@@ -19,7 +19,7 @@ CREATE TABLE programs (
 ## Run locally
 ```
 $ npm install
-$ npm start
+$ npm run dev
 ```
 
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).

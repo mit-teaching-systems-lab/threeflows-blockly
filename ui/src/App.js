@@ -69,6 +69,7 @@ class App extends Component {
 
   onLoadClicked() {
     const xmlText = window.prompt('Paste XML');
+    if (xmlText === null) return;
     this.loadXmlText(xmlText);
   }
 
